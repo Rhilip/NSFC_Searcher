@@ -69,11 +69,7 @@ def arg_parser():
                         help='批准年度 默认为当前年度 ，多年度或跨年度使用英文 , - 连接 ， 例如 2004,2009-2019 ')
 
     # 解析命令并转化为字典对象
-    args = vars(parser.parse_args())
-    check_grant_code(args['grantCode'], args['subGrantCode'], args['helpGrantCode'])  # 检查grantCode是否允许
-    args['year'] = parse_year(args['year'])  # 分解year
-
-    return args
+    return vars(parser.parse_args())
 
 
 class NsfcOfficial:
@@ -135,6 +131,9 @@ class NsfcOfficial:
             "year": kwargs.get('year', time.localtime().tm_year),  # 批准年度
             "sqdm": kwargs.get('sqdm', '')  # 申请代码 （短）
         }
+
+        # 检查grantCode是否允许
+        check_grant_code(search_map['grantCode'], search_map['subGrantCode'], search_map['helpGrantCode'])
 
         return ",".join([k + ':' + str(v) for k, v in search_map.items()])
 
@@ -209,9 +208,11 @@ class NsfcOfficial:
 
             data.extend(list(map(data_fix, year_data)))
 
+        out_file = os.path.join('.', 'output', 'out_%s.csv' % (int(time.time())))
         header = ['prjNo', 'subjectCode', 'ctitle', 'psnName', 'orgName', 'totalAmt', 'startEndDate', 'year',
                   'grantCode']
-        utils.csv_writer(os.path.join('.', 'output', 'out_%s.csv' % (int(time.time()))), header, data)
+        utils.csv_writer(out_file, header, data)
+        print('搜索完成， 请检查 %s' % (out_file,))
 
 
 if __name__ == '__main__':
